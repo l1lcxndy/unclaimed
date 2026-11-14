@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+chromadb
+pypdf
+httpx
+python-dotenv
+pytest

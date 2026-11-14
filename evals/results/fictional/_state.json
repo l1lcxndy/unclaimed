@@ -1,0 +1,39 @@
+{
+  "metrics": [
+    {
+      "id": "pass",
+      "label": "Pass",
+      "kind": "binary"
+    },
+    {
+      "id": "recall",
+      "label": "Recall",
+      "kind": "float"
+    },
+    {
+      "id": "no_wrong",
+      "label": "No wrong",
+      "kind": "binary"
+    },
+    {
+      "id": "cited",
+      "label": "Cited",
+      "kind": "float"
+    },
+    {
+      "id": "asks_info",
+      "label": "Asks info",
+      "kind": "binary"
+    }
+  ],
+  "perf_fields": [
+    {
+      "id": "latency_s",
+      "label": "Latency (s)"
+    },
+    {
+      "id": "programs",
+      "label": "Programs"
+    }
+  ]
+}

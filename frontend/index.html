@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unclaimed</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>Unclaimed</h1>
+    <p class="lead">Describe your situation. We'll find the benefit programs you may qualify for and what you need to claim them.</p>
+    <p class="disclaimer" role="note">This suggests eligibility only. Confirm with the official office.</p>
+
+    <div id="log" aria-live="polite"></div>
+
+    <form id="ask">
+      <label for="question">Your situation or question</label>
+      <textarea id="question" rows="3" maxlength="2000" required
+        placeholder="e.g. 24-year-old rideshare driver, married, one child"></textarea>
+      <button type="submit">Ask</button>
+    </form>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+{"prompt_id": "c17", "rep": 0, "class": "harness_or_serving_error", "http_status": 502, "detail": "{\"detail\":\"The local model call failed (ValidationError). Try again.\"}", "model": "qwen2.5vl:7b"}

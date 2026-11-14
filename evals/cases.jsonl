@@ -1,0 +1,25 @@
+{"id": "c01", "tags": ["single"], "question": "I'm a 35-year-old farmer and I own 3 acres where I grow wheat.", "expected": ["Farm Income Support"], "forbidden": []}
+{"id": "c02", "tags": ["single"], "question": "I deliver food on a bike for an app. I'm 27.", "expected": ["Gig Worker Accident Cover"], "forbidden": []}
+{"id": "c03", "tags": ["single"], "question": "I'm 24 and 4 months pregnant with my first child.", "expected": ["Maternity Support Payment"], "forbidden": []}
+{"id": "c04", "tags": ["multi"], "question": "My mother is 72. Our whole household earns about 60000 a year.", "expected": ["Senior Citizen Pension", "Family Health Cover"], "forbidden": []}
+{"id": "c05", "tags": ["single"], "question": "I just got into university. I scored 78% in my final school exams and my parents earn 180000 a year.", "expected": ["Higher Education Scholarship"], "forbidden": ["Family Health Cover"]}
+{"id": "c06", "tags": ["single"], "question": "I sell vegetables from a cart on the roadside. I have a vending certificate and need money for stock.", "expected": ["Street Vendor Working Capital Loan"], "forbidden": []}
+{"id": "c07", "tags": ["single"], "question": "I'm 30 and want to open a small tailoring shop. I've never run a business before.", "expected": ["Startup Business Loan"], "forbidden": []}
+{"id": "c08", "tags": ["single"], "question": "I'm 26. I lost my left leg in an accident and my medical board certificate says 60% disability.", "expected": ["Disability Allowance"], "forbidden": []}
+{"id": "c09", "tags": ["single"], "question": "We live in a village in a mud house with a thatched roof, on land we own.", "expected": ["Rural Housing Grant"], "forbidden": []}
+{"id": "c10", "tags": ["multi"], "question": "24 year old rideshare driver, married, one kid aged 3.", "expected": ["Gig Worker Accident Cover", "Child Nutrition Grant"], "forbidden": []}
+{"id": "c11", "tags": ["multi"], "question": "I'm a 30-year-old farmer with 2 acres of my own land. My wife just gave birth to our second baby.", "expected": ["Farm Income Support", "Maternity Support Payment", "Child Nutrition Grant"], "forbidden": []}
+{"id": "c12", "tags": ["multi"], "question": "I'm 22, unemployed, finished 10 years of school, and our family earns 90000 a year.", "expected": ["Skills Training Stipend", "Family Health Cover"], "forbidden": []}
+{"id": "c13", "tags": ["near-miss"], "question": "I own 12 acres of farmland. Can I get farm income support?", "expected": [], "forbidden": ["Farm Income Support"]}
+{"id": "c14", "tags": ["near-miss"], "question": "I'm 58. Can I get the old age pension yet?", "expected": [], "forbidden": ["Senior Citizen Pension"]}
+{"id": "c15", "tags": ["near-miss"], "question": "I'm 50 and want to start my first business, a small bakery.", "expected": [], "forbidden": ["Startup Business Loan"]}
+{"id": "c16", "tags": ["near-miss"], "question": "I have a certified disability of 25% from a work injury.", "expected": [], "forbidden": ["Disability Allowance"]}
+{"id": "c17", "tags": ["near-miss"], "question": "My son is 8 years old. Can I get the child nutrition grant?", "expected": [], "forbidden": ["Child Nutrition Grant"]}
+{"id": "c18", "tags": ["near-miss"], "question": "I'm in college but scored 52% in my last exam. My family earns 100000 a year.", "expected": ["Family Health Cover"], "forbidden": ["Higher Education Scholarship"]}
+{"id": "c19", "tags": ["near-miss"], "question": "I'm 28 and pregnant with my third child.", "expected": [], "forbidden": ["Maternity Support Payment"]}
+{"id": "c20", "tags": ["no-match"], "question": "What's the best pizza topping?", "expected": [], "forbidden": [], "no_match": true}
+{"id": "c21", "tags": ["no-match"], "question": "I'm a software engineer earning 2500000 a year, single, no kids, living in the city.", "expected": [], "forbidden": [], "no_match": true}
+{"id": "c22", "tags": ["no-match"], "question": "How do I renew my driving license?", "expected": [], "forbidden": [], "no_match": true}
+{"id": "c23", "tags": ["vague"], "question": "I'm a farmer.", "expected": [], "forbidden": [], "needs_info": true}
+{"id": "c24", "tags": ["vague"], "question": "I'm a 65-year-old widow.", "expected": [], "forbidden": [], "needs_info": true}
+{"id": "c25", "tags": ["follow-up"], "history": [{"role": "user", "content": "24 year old rideshare driver, married, one kid aged 3."}, {"role": "assistant", "content": "You may qualify for accident cover as a gig worker and a nutrition grant for your child.\nPrograms: Gig Worker Accident Cover, Child Nutrition Grant"}], "question": "What about my wife? She's 23 and pregnant with our second child.", "expected": ["Maternity Support Payment"], "forbidden": []}
