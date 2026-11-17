@@ -11,7 +11,8 @@ clearly does not qualify for. Each entry:
 - program_name: exactly the NAME from the excerpt label
 - who_its_for: the main group of people this program is meant for, as the excerpts describe them
   (for example "landholding farmer families" or "pregnant women"), not paperwork or procedure, with:
-    group: that group in a few words
+    group: that group in a few words, only the trait that defines it (a kind of work, life stage, age
+      range); accounts, consent, documents and other conditions go in who_can_apply instead
     household_member: who in the person's household could be in that group: "the person", or a spouse,
       child, parent or other member they mentioned (for example "their wife" or "their 3-year-old child")
     persons_fact: what the person actually said about that member that bears on it, or "not stated"
