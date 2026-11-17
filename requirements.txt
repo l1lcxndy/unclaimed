@@ -2,6 +2,8 @@ fastapi
 uvicorn
 chromadb
 pypdf
+cryptography
+fonttools
 httpx
 python-dotenv
 pytest

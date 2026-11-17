@@ -23,7 +23,9 @@ python ingest.py               # reads docs/*.pdf, rebuilds chroma_store/
 uvicorn app:app --reload       # open http://127.0.0.1:8000
 ```
 
-`GET /health` returns the chunk count, so you can confirm ingest ran. `POST /ask` takes `{"question": "...", "history": []}`.
+`GET /health` returns the chunk count, so you can confirm ingest ran. `POST /ask` takes `{"question": "...", "history": [], "region": null}`.
+
+Set each PDF's program name and region in `docs/meta.json` (see `docs/README.txt`). When the documents cover more than one region, the page shows a "Where you live" picker (`GET /regions`) and answers only from that region's programs. Your PDFs, `meta.json` and any `docs/*.jsonl` stay out of git.
 
 ## Test
 
@@ -38,6 +40,7 @@ The tests check chunking, retrieval and the eval grader. They never call the LLM
 ```bash
 python evals/run_eval.py                  # 25 test people against 12 fictional programs, graded by code
 python evals/run_eval.py --variant v1     # after a change; compare variants in the report
+python evals/run_eval.py --real           # your own docs/*.pdf + docs/real_cases.jsonl (same case format, plus "region")
 ```
 
 The cases are in [evals/REVIEW.md](evals/REVIEW.md). Results go to `evals/results/`. A case passes only if it finds every expected program, lists nothing wrong or invented, has every citation verified, and asks for missing facts when the person is vague.

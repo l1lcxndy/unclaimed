@@ -31,8 +31,8 @@ STATE = {
 }
 
 
-def load_cases():
-    return [json.loads(line) for line in (HERE / "cases.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
+def load_cases(path=HERE / "cases.jsonl"):
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
 def corpus_chunks():
@@ -113,6 +113,8 @@ def main():
     parser.add_argument("--reps", type=int, default=1)
     parser.add_argument("--model", help="Ollama model to use (default: MODEL_NAME from .env)")
     parser.add_argument("--cases", help="comma-separated case ids to run (default: all)")
+    parser.add_argument("--real", action="store_true",
+                        help="use your own docs/*.pdf and docs/real_cases.jsonl (both kept out of git) instead of the fictional corpus")
     args = parser.parse_args()
     if args.model:
         os.environ["MODEL_NAME"] = args.model
@@ -125,32 +127,38 @@ def main():
     from rag import store
 
     # Fresh throwaway store per run, so the user's real chroma_store/ is never touched.
+    if args.real:
+        from ingest import DOCS, build_chunks
+        chunks, cases_path, flow = build_chunks(DOCS), DOCS / "real_cases.jsonl", FLOW.with_name("real")
+    else:
+        chunks, cases_path, flow = corpus_chunks(), HERE / "cases.jsonl", FLOW
     unclaimed.collection = store.get_collection(tempfile.mkdtemp(prefix="unclaimed-eval-"), reset=True)
-    store.add(unclaimed.collection, corpus_chunks())
+    store.add(unclaimed.collection, chunks)
     client = TestClient(unclaimed.app)
     model = os.getenv("MODEL_NAME") or "qwen3:14b-q4_K_M"
 
-    out = FLOW / args.variant
+    out = flow / args.variant
     (out / "traces").mkdir(parents=True, exist_ok=True)
-    if not (FLOW / "_state.json").exists():
-        (FLOW / "_state.json").write_text(json.dumps(STATE, indent=2), encoding="utf-8")
+    if not (flow / "_state.json").exists():
+        (flow / "_state.json").write_text(json.dumps(STATE, indent=2), encoding="utf-8")
     results_path = out / "results.jsonl"
     done = set()
     if results_path.exists():
         done = {(r["prompt_id"], r["rep"]) for r in map(json.loads, results_path.read_text(encoding="utf-8").splitlines())}
 
-    cases = load_cases()
+    cases = load_cases(cases_path)
     if args.cases:
         wanted = set(args.cases.split(","))
         cases = [c for c in cases if c["id"] in wanted]
-    known = program_names()
+    known = {c["metadata"]["program_name"] for c in chunks}
 
     for case in cases:
         for rep in range(args.reps):
             if (case["id"], rep) in done:
                 continue
             started = time.time()
-            res = client.post("/ask", json={"question": case["question"], "history": case.get("history", [])})
+            res = client.post("/ask", json={"question": case["question"], "history": case.get("history", []),
+                                              "region": case.get("region")})
             latency = round(time.time() - started, 1)
             if res.status_code != 200:
                 with open(out / "errors.jsonl", "a", encoding="utf-8") as f:

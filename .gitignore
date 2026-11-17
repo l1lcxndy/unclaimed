@@ -4,3 +4,9 @@ chroma_store/
 __pycache__/
 .pytest_cache/
 evals/results/**/traces/
+
+# real documents and their metadata stay local
+docs/*.pdf
+docs/meta.json
+docs/*.jsonl
+evals/results/real/

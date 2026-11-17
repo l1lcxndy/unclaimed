@@ -1,0 +1,6 @@
+# Separate "who can apply" and "who cannot apply" checks; listing needs a requirement the person fits; cutoff 0.85
+
+- Answer (`rag/generate.py`, `prompts/answer.txt`): `rule_checks` (every rule rewritten as a positive requirement, met/not_met/unknown) is replaced by two lists. `who_can_apply`: requirement as stated, person_fits yes/no/unknown. `who_cannot_apply`: excluded group as stated, person_is_in_group yes/no/unknown. Each is a plain yes/no question, so there is no negation to flip. A program is listed only if the person fits at least one requirement, fails none, and is in no excluded group. Not being excluded ("doesn't pay income tax") no longer counts as a reason to qualify.
+- Why: on real documents, a blacksmith was listed for farmer income support because two exclusions were "met" while "is a farmer" was unknown. A first attempt that only tagged each rule qualifies/excludes failed 3 of 3 fictional cases: the model stopped rewriting exclusions in positive form and marked them not_met. Stopped and replaced.
+- Retrieval (`rag/store.py`): cutoff 0.75 -> 0.85, the lowest that misses no expected program on the fictional and real cases (real documents' wordy prose scores ~0.8). Tuned on the eval cases themselves, so not a held-out result.
+- Cost: more loosely related chunks reach the model, so answers may be slower.

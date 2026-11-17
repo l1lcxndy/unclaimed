@@ -46,7 +46,9 @@ h2 { font-size: 0.9rem; margin: 12px 0 4px; color: var(--muted); }
 .maybe { font-size: 0.85rem; color: var(--warn-fg); background: var(--warn-bg); display: inline-block; padding: 2px 8px; border-radius: 6px; margin-top: 4px !important; }
 form { display: flex; flex-direction: column; gap: 8px; }
 label { font-weight: 600; }
-textarea { font: inherit; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--fg); resize: vertical; }
+#region-row { display: flex; align-items: center; gap: 8px; }
+#region-row[hidden] { display: none; }
+select, textarea { font: inherit; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--fg); resize: vertical; }
 button { align-self: flex-end; font: inherit; padding: 8px 20px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; cursor: pointer; }
 button:disabled { opacity: 0.6; cursor: wait; }
-button:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

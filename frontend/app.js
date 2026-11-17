@@ -2,7 +2,14 @@ const form = document.getElementById("ask");
 const input = document.getElementById("question");
 const log = document.getElementById("log");
 const button = form.querySelector("button");
+const region = document.getElementById("region");
 const history = [];
+
+fetch("/regions").then((r) => r.json()).then((names) => {
+  if (names.length < 2) return;
+  names.forEach((name) => region.append(new Option(name, name)));
+  document.getElementById("region-row").hidden = false;
+}).catch(() => {});
 
 function add(tag, text, className) {
   const el = document.createElement(tag);
@@ -52,7 +59,7 @@ form.addEventListener("submit", async (e) => {
     const res = await fetch("/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question, history }),
+      body: JSON.stringify({ question, history, region: region.value || null }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Request failed.");

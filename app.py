@@ -31,6 +31,7 @@ class Turn(BaseModel):
 class AskRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
     history: list[Turn] = Field(default=[], max_length=20)
+    region: str | None = Field(default=None, max_length=100)
 
 
 def situation_parts(text):
@@ -44,6 +45,11 @@ def health():
     return {"ok": True, "chunks": collection.count()}
 
 
+@app.get("/regions")
+def regions():
+    return store.regions(collection)
+
+
 @app.post("/ask")
 def ask(req: AskRequest):
     history = [t.model_dump() for t in req.history][-6:]
@@ -52,7 +58,8 @@ def ask(req: AskRequest):
     # Follow-ups ("what about my wife?") need earlier turns to retrieve anything; newest first
     # because the embedding model truncates long input from the end.
     earlier = [t["content"] for t in reversed(history) if t["role"] == "user"]
-    chunks = store.query_many(collection, [" ".join([req.question, *earlier]), *situation_parts(req.question)])
+    chunks = store.query_many(collection, [" ".join([req.question, *earlier]), *situation_parts(req.question)],
+                              region=req.region)
     if not chunks:
         return {"answer": NO_MATCH, "programs": [], "sources": [], "missing_info": []}
 

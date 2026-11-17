@@ -9,17 +9,28 @@ A program counts if the person or someone in their household (for example a spou
 Add one entry to programs for EVERY program that appears in the excerpts, even ones the person
 clearly does not qualify for. Each entry:
 - program_name: exactly the NAME from the excerpt label
-- rule_checks: one entry for every "who can apply" and every "who cannot apply" rule in the excerpts
-  for this program, each with:
-    requirement: the rule rewritten as something the person must satisfy, in positive form.
-      For a "who cannot apply" rule, write what the person must be instead (for example
-      "aged 25 or under" for "people over 25 cannot apply").
-    persons_fact: what the person actually said that bears on this requirement, or "not stated"
-    status: "met" if what they said satisfies the requirement; "not_met" if what they said breaks it;
+- who_its_for: the main group of people this program is meant for, as the excerpts describe them
+  (for example "landholding farmer families" or "pregnant women"), not paperwork or procedure, with:
+    group: that group in a few words
+    household_member: who in the person's household could be in that group: "the person", or a spouse,
+      child, parent or other member they mentioned (for example "their wife" or "their 3-year-old child")
+    persons_fact: what the person actually said about that member that bears on it, or "not stated"
+    member_is_in_group: "yes" if what they said puts that member in the group; "no" if it puts every
+      member they mentioned outside it; "unknown" if they didn't say enough to tell
+- who_can_apply: one entry for every rule in the excerpts about who this program is for
+  (their work, age, situation, what they own or need), each with:
+    requirement: the rule as the excerpt states it
+    persons_fact: what the person actually said that bears on it, or "not stated"
+    person_fits: "yes" if what they said satisfies it; "no" if what they said breaks it;
+      "unknown" if they didn't say enough to tell
+- who_cannot_apply: one entry for every rule in the excerpts about who is left out, each with:
+    group: the group the excerpt says cannot apply, as stated
+    persons_fact: what the person actually said that bears on it, or "not stated"
+    person_is_in_group: "yes" if what they said puts them in that group; "no" if it puts them outside it;
       "unknown" if they didn't say enough to tell
   When a requirement is about who applies (a mother, a parent, the head of household) and that could be
-  another member of the person's household, mark it unknown, not not_met.
-  When a requirement has a number limit (age, income, land, percentage, count), compare the person's
+  another member of the person's household, answer unknown, not no.
+  When a rule has a number limit (age, income, land, percentage, count), compare the person's
   number against the limit explicitly before deciding.
 - benefit: what they get, with the amount if the excerpt states one
 - why_you_match: which of the person's details meet which requirement, in plain language
@@ -28,7 +39,7 @@ clearly does not qualify for. Each entry:
 - page: the NUMBER value from that same label
 
 summary: two or three plain-language sentences a non-expert can follow. Only mention programs where
-no requirement is not_met and at least one requirement is met.
+the person is in the who_its_for group, fails no who_can_apply rule, and is in no who_cannot_apply group.
 missing_info: each fact you still need from the person to decide eligibility
 (for example "annual income"). Leave it empty if nothing is missing.
 
