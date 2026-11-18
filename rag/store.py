@@ -8,6 +8,8 @@ from rag.embed import embed
 DEFAULT_PATH = Path(__file__).resolve().parent.parent / "chroma_store"
 COLLECTION = "programs"
 MAX_DISTANCE = 0.85
+ELIGIBILITY = "Am I eligible? Who can get this and what are the requirements to qualify"
+LONG_DOC_CHUNKS = 10
 
 
 def get_collection(path=None, reset=False):
@@ -39,7 +41,9 @@ def regions(collection):
 
 def query_many(collection, texts, k=8, max_distance=MAX_DISTANCE, limit=10, region=None):
     """Search several texts at once and merge. Every text's best hits come first, so one strong need
-    ("rideshare driver") can't crowd out another ("kid aged 3"). region limits results to one region's programs."""
+    ("rideshare driver") can't crowd out another ("kid aged 3"). A long document's second slot goes to its passage
+    that best says who qualifies, so its tables and examples can't push out its rules.
+    region limits results to one region's programs."""
     count = collection.count()
     if count == 0:
         return []
@@ -58,5 +62,19 @@ def query_many(collection, texts, k=8, max_distance=MAX_DISTANCE, limit=10, regi
     for c in hits:
         c["nth"] = nth[c["metadata"]["program_name"]]
         nth[c["metadata"]["program_name"]] += 1
+    for name in nth:
+        if len(collection.get(where={"program_name": name}, include=[])["ids"]) <= LONG_DOC_CHUNKS:
+            continue
+        r = collection.query(query_embeddings=embed([ELIGIBILITY]), n_results=1, where={"program_name": name})
+        rule = best.get(r["ids"][0][0])
+        if rule:
+            if rule["nth"] <= 1:
+                continue
+            hits.remove(rule)
+        for c in hits:
+            if c["metadata"]["program_name"] == name and c["nth"] >= 1:
+                c["nth"] += 1
+        hits.append({"text": r["documents"][0][0], "metadata": r["metadatas"][0][0],
+                     "distance": r["distances"][0][0], "nth": 1})
     hits = sorted(hits, key=lambda c: c["nth"])[:limit]
     return [{k: v for k, v in c.items() if k not in ("rank", "nth")} for c in hits]

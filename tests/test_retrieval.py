@@ -57,6 +57,21 @@ def test_region_filter_keeps_other_regions_out(tmp_path):
 
 
 
+def test_long_document_still_brings_its_rules(tmp_path):
+    collection = store.get_collection(tmp_path, reset=True)
+    filler = [f"Worked example {i}: a family farm sold rice and wheat at the market for {i * 100} per sack."
+              for i in range(30)]
+    rules = "Am I eligible? You qualify if your family owns cultivable farmland. Requirements: land record."
+    store.add(collection, [
+        {"id": f"long_{i}", "text": text,
+         "metadata": {"program_name": "Farm Income Support", "source_file": "long.pdf", "page": i + 1,
+                      "region": "national", "category": "agriculture"}}
+        for i, text in enumerate([*filler, rules])
+    ])
+    hits = store.query_many(collection, ["I sell rice from my family farm at the market"])
+    assert rules in [h["text"] for h in hits]
+
+
 def test_each_need_in_a_situation_gets_searched(tmp_path):
     from app import situation_parts
     from evals.run_eval import corpus_chunks
