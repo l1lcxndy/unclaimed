@@ -4,7 +4,7 @@ fictional corpus in evals/corpus/, and gets graded by code (free, deterministic,
     venv\\Scripts\\python.exe evals\\run_eval.py
     venv\\Scripts\\python.exe evals\\run_eval.py --variant v1
 
-Writes evals/results/<fictional|real>/<variant>/{results.jsonl,errors.jsonl,traces/}."""
+Writes evals/results/<fictional|real|heldout>/<variant>/{results.jsonl,errors.jsonl,traces/}."""
 import argparse
 import json
 import math
@@ -115,6 +115,8 @@ def main():
     parser.add_argument("--cases", help="comma-separated case ids to run (default: all)")
     parser.add_argument("--real", action="store_true",
                         help="use your own docs/*.pdf and docs/real_cases.jsonl (both kept out of git) instead of the fictional corpus")
+    parser.add_argument("--heldout", action="store_true",
+                        help="cases in docs/heldout/cases.jsonl, written before any run, against docs/*.pdf plus docs/heldout/*.pdf")
     args = parser.parse_args()
     if args.model:
         os.environ["MODEL_NAME"] = args.model
@@ -127,7 +129,11 @@ def main():
     from rag import store
 
     # Fresh throwaway store per run, so the user's real chroma_store/ is never touched.
-    if args.real:
+    if args.heldout:
+        from ingest import DOCS, build_chunks
+        held = DOCS / "heldout"
+        chunks, cases_path, flow = build_chunks(DOCS) + build_chunks(held), held / "cases.jsonl", FLOW.with_name("heldout")
+    elif args.real:
         from ingest import DOCS, build_chunks
         chunks, cases_path, flow = build_chunks(DOCS), DOCS / "real_cases.jsonl", FLOW.with_name("real")
     else:

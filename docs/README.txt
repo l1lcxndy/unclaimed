@@ -9,3 +9,6 @@ With more than one region, the page asks where the person lives and only searche
 Optional: real_cases.jsonl here holds eval cases for your own PDFs (format as evals/cases.jsonl, plus "region").
 Run them with: python evals/run_eval.py --real
 PDFs, meta.json and *.jsonl in this folder are kept out of git.
+
+Optional held-out test: put new PDFs, meta.json and cases.jsonl in docs/heldout/ (also kept out of git),
+write the cases before running anything, then run once with: python evals/run_eval.py --heldout

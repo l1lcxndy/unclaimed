@@ -10,3 +10,5 @@ docs/*.pdf
 docs/meta.json
 docs/*.jsonl
 evals/results/real/
+docs/heldout/
+evals/results/heldout/
