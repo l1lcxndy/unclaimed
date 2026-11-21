@@ -1,6 +1,6 @@
 from rag import store
 from rag.chunker import CHUNK_CHARS, chunk_text
-from rag.generate import ProgramMatch, eligibility, mark_cited, match_names
+from rag.generate import ProgramMatch, complete_programs, eligibility, mark_cited, match_names
 
 FIXTURE = [
     ("Farm Income Support", "agriculture",
@@ -131,3 +131,13 @@ def test_program_names_match_what_was_retrieved():
     said = ["WIC Program", "Earned Income Credit (EIC)", "wic", "Pension Credt", "Free Bus Pass"]
     assert [p.program_name for p in match_names([named(n) for n in said], chunks)] == \
         ["WIC", "Earned Income Credit", "Pension Credit"]
+
+
+def test_programs_are_read_as_soon_as_each_one_is_complete():
+    reply = ('{"summary": "You may get {two} programs", "programs": [{"program_name": "A \\"quoted\\" }", '
+             '"page": 1}, {"program_name": "B", "nested": {"x": [1, 2]}}, {"program_name": "C')
+    assert complete_programs(reply) == [{"program_name": 'A "quoted" }', "page": 1},
+                                        {"program_name": "B", "nested": {"x": [1, 2]}}]
+    assert complete_programs('{"summary": "x", "progr') == []
+    assert complete_programs(reply.split(', {"program_name": "C')[0] + '], "missing_info": [{}]}') == \
+        complete_programs(reply)

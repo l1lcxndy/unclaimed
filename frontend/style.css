@@ -37,6 +37,7 @@ h2 { font-size: 0.9rem; margin: 12px 0 4px; color: var(--muted); }
 .bot p { margin: 0; }
 .bot ul { margin: 0; padding-left: 20px; white-space: normal; }
 .error { color: var(--error); margin: 0; }
+.status { color: var(--muted); font-style: italic; margin: 0 0 8px; }
 .program { border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 10px 14px; margin-top: 12px; white-space: normal; }
 .program h3 { margin: 0; font-size: 1.05rem; }
 .program h4, .bot h4 { font-size: 0.85rem; margin: 10px 0 2px; color: var(--muted); }

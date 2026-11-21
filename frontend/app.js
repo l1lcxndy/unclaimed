@@ -38,15 +38,18 @@ function programCard(p) {
   return card;
 }
 
-function render(question, data) {
-  log.append(add("p", question, "you"));
-  const reply = document.createElement("div");
-  reply.className = "bot";
-  reply.append(add("p", data.answer));
-  data.programs?.forEach((p) => reply.append(programCard(p)));
-  if (data.missing_info?.length) reply.append(add("h4", "Still needed to decide"), list(data.missing_info));
-  log.append(reply);
-  reply.scrollIntoView({ behavior: "smooth" });
+async function* events(res) {
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffered = "";
+  for (;;) {
+    const { done, value } = await reader.read();
+    buffered += decoder.decode(value || new Uint8Array(), { stream: !done });
+    const lines = buffered.split("\n");
+    buffered = lines.pop();
+    for (const line of lines) if (line.trim()) yield JSON.parse(line);
+    if (done) return;
+  }
 }
 
 form.addEventListener("submit", async (e) => {
@@ -55,21 +58,46 @@ form.addEventListener("submit", async (e) => {
   if (!question) return;
   button.disabled = true;
   button.textContent = "Checking…";
+  log.append(add("p", question, "you"));
+  const reply = document.createElement("div");
+  reply.className = "bot";
+  const status = add("p", "Searching the program documents…", "status");
+  reply.append(status);
+  log.append(reply);
+  reply.scrollIntoView({ behavior: "smooth" });
+  const found = [];
   try {
-    const res = await fetch("/ask", {
+    const res = await fetch("/ask/stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ question, history, region: region.value || null }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Request failed.");
-    render(question, data);
-    const names = (data.programs || []).map((p) => p.program_name).join(", ");
-    history.push({ role: "user", content: question },
-      { role: "assistant", content: names ? `${data.answer}\nPrograms: ${names}` : data.answer });
-    input.value = "";
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(typeof data.detail === "string" ? data.detail : "Request failed.");
+    }
+    for await (const ev of events(res)) {
+      if (ev.type === "start" && ev.checking.length) {
+        status.textContent = `Checking ${ev.checking.length} possible program${ev.checking.length > 1 ? "s" : ""}: ${ev.checking.join(", ")}`;
+      } else if (ev.type === "checked") {
+        status.textContent = `Checked ${ev.done} of ${ev.of}…`;
+      } else if (ev.type === "program") {
+        found.push(ev.program_name);
+        reply.append(programCard(ev));
+      } else if (ev.type === "done") {
+        status.remove();
+        reply.prepend(add("p", ev.answer));
+        if (ev.missing_info.length) reply.append(add("h4", "Still needed to decide"), list(ev.missing_info));
+        history.push({ role: "user", content: question },
+          { role: "assistant", content: found.length ? `${ev.answer}\nPrograms: ${found.join(", ")}` : ev.answer });
+        input.value = "";
+      } else if (ev.type === "error") {
+        throw new Error(ev.message);
+      }
+    }
   } catch (err) {
-    log.append(add("p", err.message, "error"));
+    status.remove();
+    reply.append(add("p", err.message, "error"));
   } finally {
     button.disabled = false;
     button.textContent = "Ask";

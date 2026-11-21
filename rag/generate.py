@@ -1,4 +1,5 @@
 import difflib
+import json
 import os
 from pathlib import Path
 from typing import Literal
@@ -87,23 +88,75 @@ def mark_cited(programs, chunks):
             for p in programs]
 
 
-def generate(question, chunks, history=()):
+def complete_programs(text):
+    """The program objects already closed in a partial `{"summary": ..., "programs": [{...}, {...` reply."""
+    start = text.find('"programs"')
+    start = text.find("[", start) if start >= 0 else -1
+    if start < 0:
+        return []
+    found, depth, in_string, escaped, obj_start = [], 0, False, False, None
+    for i in range(start + 1, len(text)):
+        ch = text[i]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_string = False
+        elif ch == '"':
+            in_string = True
+        elif ch == "{":
+            depth += 1
+            obj_start = i if depth == 1 else obj_start
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                found.append(json.loads(text[obj_start:i + 1]))
+        elif ch == "]" and depth == 0:
+            break
+    return found
+
+
+def generate_stream(question, chunks, history=()):
     """Answer from retrieved chunks only, using a local Ollama model (free, nothing leaves the machine).
-    history: prior {role, content} turns, starting with a user turn."""
+    Yields ("checked", n) after each program is checked, ("program", ProgramMatch) for each one the person may
+    qualify for, then ("answer", Answer). history: prior {role, content} turns, starting with a user turn."""
     messages = [*history, {"role": "user", "content": PROMPT.format(question=question, chunks=format_chunks(chunks))}]
-    response = httpx.post(
-        f"{os.getenv('OLLAMA_URL') or 'http://127.0.0.1:11434'}/api/chat",
-        json={
-            "model": os.getenv("MODEL_NAME") or "qwen3:14b-q4_K_M",
-            "messages": messages,
-            "stream": False,
-            "think": False,
-            "format": Answer.model_json_schema(),
-            "options": {"temperature": 0, "num_ctx": 8192},
-        },
-        timeout=600,
-    )
-    response.raise_for_status()
-    answer = Answer.model_validate_json(response.json()["message"]["content"])
-    answer.programs = match_names([p for p in answer.programs if eligibility(p) != "not_eligible"], chunks)
-    return answer
+    body = {
+        "model": os.getenv("MODEL_NAME") or "qwen3:14b-q4_K_M",
+        "messages": messages,
+        "stream": True,
+        "think": False,
+        "format": Answer.model_json_schema(),
+        "options": {"temperature": 0, "num_ctx": 8192},
+    }
+    text, checked, kept = "", 0, {}
+    with httpx.stream("POST", f"{os.getenv('OLLAMA_URL') or 'http://127.0.0.1:11434'}/api/chat", json=body,
+                      timeout=600) as response:
+        response.raise_for_status()
+        for line in response.iter_lines():
+            if not line:
+                continue
+            piece = json.loads(line).get("message", {}).get("content", "")
+            text += piece
+            if "}" not in piece:
+                continue
+            for raw in complete_programs(text)[checked:]:
+                checked += 1
+                yield "checked", checked
+                program = ProgramMatch.model_validate(raw)
+                if eligibility(program) == "not_eligible":
+                    continue
+                for named in match_names([program], chunks):
+                    if named.program_name not in kept:
+                        kept[named.program_name] = named
+                        yield "program", named
+    answer = Answer.model_validate_json(text)
+    answer.programs = list(kept.values())
+    yield "answer", answer
+
+
+def generate(question, chunks, history=()):
+    """The whole answer at once (see generate_stream)."""
+    return next(value for kind, value in generate_stream(question, chunks, history) if kind == "answer")
